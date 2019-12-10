@@ -6,11 +6,13 @@ import 'package:built_value/serializer.dart';
 import 'package:http/http.dart' as http;
 import 'package:jikan_dart/src/model/anime_episodes.dart';
 import 'package:jikan_dart/src/model/article.dart';
+import 'package:jikan_dart/src/model/character.dart';
 import 'package:jikan_dart/src/model/forum.dart';
 import 'package:jikan_dart/src/model/genre/genre.dart';
 import 'package:jikan_dart/src/model/genre/genre_list.dart';
 import 'package:jikan_dart/src/model/genre/genre_type.dart';
 import 'package:jikan_dart/src/model/manga/manga_character.dart';
+import 'package:jikan_dart/src/model/manga/manga_user_update.dart';
 import 'package:jikan_dart/src/model/more_info.dart';
 import 'package:jikan_dart/src/model/picture.dart';
 import 'package:jikan_dart/src/model/producer/producers.dart';
@@ -19,6 +21,7 @@ import 'package:jikan_dart/src/model/recommendation.dart';
 import 'package:jikan_dart/src/model/schedule/schedule.dart';
 import 'package:jikan_dart/src/model/schedule/week_day.dart';
 import 'package:jikan_dart/src/model/season/season.dart';
+import 'package:jikan_dart/src/model/season/season_archive.dart';
 import 'package:jikan_dart/src/model/season/season_type.dart';
 import 'package:jikan_dart/src/model/serializers.dart';
 import 'package:jikan_dart/src/model/stats.dart';
@@ -27,6 +30,7 @@ import 'package:jikan_dart/src/model/top_type.dart';
 import 'package:jikan_dart/src/model/user/history_result.dart';
 import 'package:jikan_dart/src/model/user/profile_result.dart';
 import 'package:jikan_dart/src/model/user/user_request_type.dart';
+import 'package:jikan_dart/src/model/anime_user_update.dart';
 import 'package:jikan_dart/src/request_type/anime_request_type.dart';
 
 class JikanApi {
@@ -371,5 +375,83 @@ class JikanApi {
     var response = await http.get(url);
 
     return HistoryResult.fromJson(response.body);
+  }
+
+  Future<BuiltList<CharacterStaff>> getCharacterStaff(int animeId) async {
+    var url = baseUrl + '/anime/$animeId${AnimeCharactersStaff().toString()}';
+
+    print('hitting $url');
+    var response = await http.get(url);
+
+    var jsonEncoded = json.decode(response.body);
+
+    var charactersStaff = jsonEncoded['characters'];
+
+    final listCharactersStaff = FullType(BuiltList, [FullType(CharacterStaff)]);
+
+    BuiltList<CharacterStaff> characterStaffList = serializers
+        .deserialize(charactersStaff, specifiedType: listCharactersStaff);
+
+    return characterStaffList;
+  }
+
+  Future<BuiltList<AnimeUserUpdate>> getUserUpdates(int animeId,
+      {int page}) async {
+    var url = baseUrl +
+        '/anime/$animeId${AnimeUserUpdates(pageNumber: page).toString()}';
+
+    print('hitting $url');
+    var response = await http.get(url);
+
+    var jsonEncoded = json.decode(response.body);
+
+    var userUpdates = jsonEncoded['users'];
+
+    final listUserUpdate = FullType(BuiltList, [FullType(AnimeUserUpdate)]);
+
+    BuiltList<AnimeUserUpdate> userUpdateList =
+        serializers.deserialize(userUpdates, specifiedType: listUserUpdate);
+
+    return userUpdateList;
+  }
+
+  Future<BuiltList<MangaUserUpdate>> getMangaUserUpdate(int managaId,
+      {int page}) async {
+    var url = baseUrl + '/manga/$managaId/userupdates';
+    if (page != null) {
+      url += '/$page';
+    }
+
+    print('hitting $url');
+    var response = await http.get(url);
+
+    var jsonEncoded = json.decode(response.body);
+
+    var userUpdates = jsonEncoded['users'];
+
+    final listUserUpdate = FullType(BuiltList, [FullType(MangaUserUpdate)]);
+
+    BuiltList<MangaUserUpdate> userUpdateList =
+        serializers.deserialize(userUpdates, specifiedType: listUserUpdate);
+
+    return userUpdateList;
+  }
+
+  Future<BuiltList<SeasonArchive>> getSeasonArchive() async {
+    var url = baseUrl + '/season/archive';
+
+    print('hitting $url');
+    var response = await http.get(url);
+
+    var jsonEncoded = json.decode(response.body);
+
+    var seasons = jsonEncoded['archive'];
+
+    final listSeasons = FullType(BuiltList, [FullType(SeasonArchive)]);
+
+    BuiltList<SeasonArchive> seasonList =
+        serializers.deserialize(seasons, specifiedType: listSeasons);
+
+    return seasonList;
   }
 }

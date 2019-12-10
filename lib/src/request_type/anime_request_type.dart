@@ -59,3 +59,21 @@ class AnimeMoreInfo extends AnimeRequestType {
     return '/moreinfo';
   }
 }
+
+class AnimeCharactersStaff extends AnimeRequestType {
+  @override
+  String toString() {
+    return '/characters_staff';
+  }
+}
+
+class AnimeUserUpdates extends AnimeRequestType {
+  final int pageNumber;
+
+  AnimeUserUpdates({this.pageNumber = 1});
+
+  @override
+  String toString() {
+    return '/userupdates/$pageNumber';
+  }
+}
